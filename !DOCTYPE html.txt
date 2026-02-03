@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO & Meta -->
+    <title>Visual Focus Timer - 목표 달성 타이머</title>
+    <meta name="description" content="직관적인 비주얼 타이머로 집중력을 높이세요. 목표 설정 기능 포함.">
+    <meta property="og:title" content="Visual Focus Timer">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630?text=Focus+Timer">
+
+    <style>
+        :root {
+            --primary-color: #FF4D4D;
+            /* 더 진하고 선명한 빨간색 */
+            --primary-hover: #E63946;
+            --bg-color: #F0F2F5;
+            /* 부드러운 그레이 */
+            --container-bg: #FFFFFF;
+            --text-main: #2C3E50;
+            --text-sub: #95A5A6;
+            --tick-major: #DDE2E5;
+            --tick-minor: #F0F2F5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 460px;
+            background: var(--container-bg);
+            padding: 45px 35px;
+            border-radius: 40px;
+            /* 강력한 그림자로 공중에 떠 있는 효과 부여 */
+            box-shadow:
+                0 30px 60px -12px rgba(50, 50, 93, 0.25),
+                0 18px 36px -18px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            /* 무음 버튼 배치를 위해 relative 설정 */
+        }
+
+        /* 1. 헤더 */
+        header {
+            width: 100%;
+            margin-bottom: 24px;
+            padding-top: 10px;
+            /* 상단 여백 확보 */
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        p.subtitle {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+
+        /* [추가] 무음 모드 버튼 스타일 */
+        .btn-sound-toggle {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            color: var(--text-sub);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* 버튼 자체에도 미세한 입체감 추가 */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            background-color: white;
+        }
+
+        .btn-sound-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #F8F9FA;
+            color: var(--primary-color);
+        }
+
+        .btn-sound-toggle svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+            transform: rotate(0);
+            /* 상속된 회전 초기화 */
+        }
+
+        /* 2. 목표 입력 섹션 */
+        .goal-section {
+            width: 100%;
+            margin-bottom: 35px;
+            position: relative;
+        }
+
+        .goal-input {
+            width: 100%;
+            padding: 12px 0;
+            border: none;
+            border-bottom: 2px solid #F1F3F5;
+            font-size: 1.05rem;
+            text-align: center;
+            color: var(--text-main);
+            background: transparent;
+            transition: all 0.3s;
+            border-radius: 0;
+            font-weight: 500;
+        }
+
+        .goal-input:focus {
+            outline: none;
+            border-bottom-color: var(--primary-color);
+        }
+
+        .goal-input::placeholder {
+            color: #DDE2E6;
+            font-weight: 400;
+        }
+
+        /* 3. 타이머 UI */
+        .timer-display {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            aspect-ratio: 1 / 1;
+            margin-bottom: 35px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+            overflow: visible;
+        }
+
+        /* 시계 눈금 스타일 */
+        .tick-major {
+            stroke: var(--tick-major);
+            stroke-width: 1.2;
+            stroke-linecap: round;
+        }
+
+        .tick-minor {
+            stroke: var(--tick-minor);
+            stroke-width: 0.8;
+            stroke-linecap: round;
+        }
+
+        .timer-track {
+            display: none;
+        }
+
+        /* 중앙 텍스트 컨테이너 */
+        .center-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 180px;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .time-text {
+            font-size: 3.2rem;
+            font-weight: 800;
+            color: #000;
+            line-height: 1;
+            margin-bottom: 6px;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -2px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+        }
+
+        .phrase-text {
+            font-size: 0.75rem;
+            color: var(--primary-color);
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 5px 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 딸랑딸랑 애니메이션 - transform origin 설정 추가 */
+        .jingle {
+            animation: jingle-anim 0.5s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+
+        @keyframes jingle-anim {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(5deg);
+            }
+
+            50% {
+                transform: rotate(0deg);
+            }
+
+            75% {
+                transform: rotate(-5deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        /* 4. 컨트롤 패널 */
+        .control-panel {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .slider-wrapper {
+            width: 100%;
+            padding: 0 5px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ECF0F1;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            border: 4px solid #FFF;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-top: -8px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .slider-labels {
+            position: relative;
+            width: 100%;
+            height: 20px;
+            margin-top: 12px;
+        }
+
+        .slider-label {
+            position: absolute;
+            font-size: 0.7rem;
+            color: #BDC3C7;
+            font-weight: 600;
+            width: 20px;
+            text-align: center;
+            transform: translateX(-50%);
+            top: 0;
+        }
+
+        /* 5. 버튼 스타일 */
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 18px;
+            border: none;
+            border-radius: 18px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-toggle {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.25);
+        }
+
+        .btn-toggle:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-reset {
+            background-color: #F8F9FA;
+            color: #7F8C8D;
+            border: 1px solid #ECF0F1;
+        }
+
+        .btn-reset:hover {
+            background-color: #ECF0F1;
+            color: #2C3E50;
+        }
+
+        /* 수익화 영역 */
+        .monetization-area {
+            margin-top: 40px;
+            width: 100%;
+            max-width: 460px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .ad-slot {
+            width: 100%;
+            height: 90px;
+            background-color: #FAFAFA;
+            border: 1px dashed #E0E0E0;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #BDC3C7;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- [추가] 무음 모드 토글 버튼 (우측 상단) -->
+        <button class="btn-sound-toggle" id="btn-sound" title="소리 켜기/끄기">
+            <!-- 기본 상태: 소리 켜짐 (Volume Up Icon) -->
+            <svg id="icon-sound-on" viewBox="0 0 24 24">
+                <path
+                    d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zm-4 0h-2.59l-5 5h-3.41v6h3.41l5 5h2.59v-16z" />
+            </svg>
+            <!-- 무음 상태 아이콘 (초기엔 숨김) -->
+            <svg id="icon-sound-off" viewBox="0 0 24 24" style="display: none;">
+                <path
+                    d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51c.66-1.24 1.03-2.65 1.03-4.15 0-4.28-2.99-7.86-7-8.76v2.06c2.89.86 5 3.54 5 6.7zm-4.42-3.44c.29-.61.42-1.28.42-1.96 0-1.77-1.02-3.29-2.5-4.03v3.78l2.08 2.21zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81l2.04 2.05L21 20.23 4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+            </svg>
+        </button>
+
+        <header>
+            <h1>Visual Focus Timer</h1>
+            <p class="subtitle">집중력이 필요한 순간, 시간을 시각화하세요</p>
+        </header>
+
+        <div class="goal-section">
+            <input type="text" class="goal-input" placeholder="목표한 시간 안에 완수할 프로젝트를 입력하세요">
+        </div>
+
+        <div class="timer-display">
+            <svg viewBox="0 0 100 100">
+                <!-- 2. 파이 차트 (색상 영역) -->
+                <g transform="rotate(0 50 50)">
+                    <path id="timer-wedge" d="" fill="var(--primary-color)" opacity="0.9"></path>
+                </g>
+
+                <!-- 3. 시계 눈금 (숫자 없음) -->
+                <g id="clock-face-markers"></g>
+            </svg>
+
+            <!-- 4. 중앙 텍스트 -->
+            <div class="center-content">
+                <div class="time-text" id="display-time">60:00</div>
+                <div class="phrase-text">I CAN DO IT.</div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <div class="slider-wrapper">
+                <input type="range" id="time-input" min="0" max="60" value="60" step="1">
+                <div class="slider-labels">
+                    <span class="slider-label" style="left: 0%">0</span>
+                    <span class="slider-label" style="left: 16.66%">10</span>
+                    <span class="slider-label" style="left: 33.33%">20</span>
+                    <span class="slider-label" style="left: 50%">30</span>
+                    <span class="slider-label" style="left: 66.66%">40</span>
+                    <span class="slider-label" style="left: 83.33%">50</span>
+                    <span class="slider-label" style="left: 100%">60</span>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-toggle" id="btn-toggle">START</button>
+                <button class="btn-reset" id="btn-reset">RESET</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="monetization-area">
+        <div class="ad-slot">Ad Space (Google AdSense)</div>
+    </div>
+
+    <script>
+        const maxMinutes = 60;
+        let remainingSeconds = maxMinutes * 60;
+        let timerId = null;
+        let isRunning = false;
+        // [추가] 무음 모드 상태 변수
+        let isMuted = false;
+
+        const displayTime = document.getElementById('display-time');
+        const timerWedge = document.getElementById('timer-wedge');
+        const timeInput = document.getElementById('time-input');
+        const btnToggle = document.getElementById('btn-toggle');
+        const btnReset = document.getElementById('btn-reset');
+        const clockFaceGroup = document.getElementById('clock-face-markers');
+
+        // [추가] 소리 버튼 요소
+        const btnSound = document.getElementById('btn-sound');
+        const iconSoundOn = document.getElementById('icon-sound-on');
+        const iconSoundOff = document.getElementById('icon-sound-off');
+
+        // [추가] 알람 소리 재생 함수 (Web Audio API 사용 - 별도 파일 없이 작동)
+        function playAlarm() {
+            if (isMuted) return;
+
+            // AudioContext 생성
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+
+            const ctx = new AudioContext();
+            const now = ctx.currentTime;
+
+            // 단일 땡 소리 함수
+            const playStrike = (startTime) => {
+                const osc = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+
+                osc.connect(gainNode);
+                gainNode.connect(ctx.destination);
+
+                osc.type = 'sine';
+                // 땡 소리에 가까운 주파수 (높은 솔 - G5: 783.99Hz)
+                osc.frequency.setValueAtTime(784, startTime);
+
+                // 타격감 있는 엔벨로프
+                gainNode.gain.setValueAtTime(0, startTime);
+                gainNode.gain.linearRampToValueAtTime(0.5, startTime + 0.05); // Attack
+                gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + 1.2); // Decay
+
+                osc.start(startTime);
+                osc.stop(startTime + 1.2);
+            };
+
+            // 땡! 땡! 땡! (3번, 1초 간격)
+            playStrike(now);
+            playStrike(now + 1.0);
+            playStrike(now + 2.0);
+        }
+
+        // [추가] 소리 버튼 토글 이벤트
+        btnSound.addEventListener('click', () => {
+            isMuted = !isMuted;
+            if (isMuted) {
+                iconSoundOn.style.display = 'none';
+                iconSoundOff.style.display = 'block';
+                btnSound.title = "소리 켜기";
+            } else {
+                iconSoundOn.style.display = 'block';
+                iconSoundOff.style.display = 'none';
+                btnSound.title = "소리 끄기";
+                // 테스트 삼아 짧게 소리 재생 (사용자 피드백)
+                playAlarm();
+            }
+        });
+
+        // [시계 눈금 생성]
+        function drawClockFace() {
+            let html = '';
+
+            for (let i = 0; i < 60; i++) {
+                const angleDeg = i * 6;
+                const angleRad = angleDeg * (Math.PI / 180);
+
+                const isMajor = (i % 5 === 0);
+
+                const outerR = 48; // 테두리 끝
+
+                // 눈금 크기
+                const innerR = isMajor ? 45.5 : 47;
+
+                const x1 = 50 + innerR * Math.cos(angleRad);
+                const y1 = 50 + innerR * Math.sin(angleRad);
+                const x2 = 50 + outerR * Math.cos(angleRad);
+                const y2 = 50 + outerR * Math.sin(angleRad);
+
+                const tickClass = isMajor ? 'tick-major' : 'tick-minor';
+                html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="${tickClass}" />`;
+            }
+            clockFaceGroup.innerHTML = html;
+        }
+
+        // [타이머 시각화]
+        function updateTimerVisual(percent) {
+            const r = 35; // 텍스트를 충분히 감싸기 위해 35로 복구
+
+            if (percent >= 0.999) {
+                timerWedge.setAttribute("d", `M 50 50 m -${r} 0 a ${r} ${r} 0 1 1 ${r * 2} 0 a ${r} ${r} 0 1 1 -${r * 2} 0`);
+            } else if (percent <= 0.001) {
+                timerWedge.setAttribute("d", "");
+            } else {
+                const angle = 2 * Math.PI * percent;
+
+                const x = 50 + r * Math.cos(angle);
+                const y = 50 + r * Math.sin(angle);
+                const largeArcFlag = percent > 0.5 ? 1 : 0;
+
+                const startX = 50 + r;
+                const startY = 50;
+
+                const d = `M 50 50 L ${startX} ${startY} A ${r} ${r} 0 ${largeArcFlag} 1 ${x} ${y} Z`;
+                timerWedge.setAttribute("d", d);
+            }
+        }
+
+        function updateTextDisplay() {
+            const m = Math.floor(remainingSeconds / 60);
+            const s = remainingSeconds % 60;
+            displayTime.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            if (remainingSeconds <= 0) {
+                const sliderVal = parseInt(timeInput.value);
+                if (sliderVal === 0) return;
+                remainingSeconds = sliderVal * 60;
+            }
+            isRunning = true;
+            btnToggle.textContent = "PAUSE";
+            timeInput.disabled = true;
+
+            // [추가] 시작 시 문구 변경
+            document.querySelector('.phrase-text').textContent = "FOCUSING";
+
+            timerId = setInterval(() => {
+                remainingSeconds--;
+                updateTextDisplay();
+                updateTimerVisual(remainingSeconds / 3600);
+
+                if (remainingSeconds <= 0) {
+                    stopTimer();
+                    finishTimer();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (!isRunning) return;
+            clearInterval(timerId);
+            isRunning = false;
+            btnToggle.textContent = "RESUME";
+            timeInput.disabled = false;
+        }
+
+        function finishTimer() {
+            remainingSeconds = 0;
+            updateTextDisplay();
+            updateTimerVisual(0);
+            btnToggle.textContent = "START";
+
+            // [추가] 완료 시 문구 변경 및 애니메이션
+            const phrase = document.querySelector('.phrase-text');
+            phrase.textContent = "DONE";
+            phrase.classList.add('jingle');
+
+            // [추가] 알람 재생 (소리 원복 및 alert 지연)
+            playAlarm();
+
+            // alert가 즉시 실행되어 애니메이션/소리를 막는 것을 방지
+            setTimeout(() => {
+                alert("목표 달성! 수고하셨습니다 🎉");
+            }, 500);
+        }
+
+        btnToggle.addEventListener('click', () => {
+            if (isRunning) stopTimer();
+            else startTimer();
+        });
+
+        btnReset.addEventListener('click', () => {
+            stopTimer();
+            const val = parseInt(timeInput.value);
+            remainingSeconds = val * 60;
+            updateTextDisplay();
+            updateTimerVisual(remainingSeconds / 3600);
+            btnToggle.textContent = "START";
+
+            // 애니메이션 제거 및 문구 원복
+            const phrase = document.querySelector('.phrase-text');
+            phrase.classList.remove('jingle');
+            phrase.textContent = "I CAN DO IT.";
+        });
+
+        timeInput.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            if (!isRunning) {
+                remainingSeconds = val * 60;
+                updateTextDisplay();
+                updateTimerVisual(remainingSeconds / 3600);
+            }
+        });
+
+        drawClockFace();
+        updateTimerVisual(1);
+        updateTextDisplay();
+
+    </script>
+</body>
+
+</html>
