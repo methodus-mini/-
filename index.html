@@ -6,18 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- SEO & Meta -->
-    <title>Visual Focus Timer - 목표 달성 타이머</title>
-    <meta name="description" content="직관적인 비주얼 타이머로 집중력을 높이세요. 목표 설정 기능 포함.">
-    <meta property="og:title" content="Visual Focus Timer">
-    <meta property="og:image" content="https://via.placeholder.com/1200x630?text=Focus+Timer">
+    <title>온라인 뽀모도로 타이머 - 집중력 향상을 위한 25분 공부법</title>
+    <meta name="description" content="무료 온라인 뽀모도로 타이머로 공부와 업무 효율을 높이세요. 25분 집중, 5분 휴식으로 집중력을 극대화하는 가장 쉬운 방법입니다.">
+    <meta name="keywords" content="뽀모도로, 타이머, pomodoro timer, 공부 타이머, 집중력 향상, 25분 공부법, 시간 관리">
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="나만의 뽀모도로 타이머 - 지금 집중을 시작하세요">
+    <meta property="og:description" content="복잡한 설정 없는 깔끔한 뽀모도로 타이머입니다.">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630?text=Visual+Focus+Timer">
+    <meta property="og:url" content="https://your-name.netlify.app">
+
+    <link rel="canonical" href="https://your-name.netlify.app">
+
+    <!-- Favicon (Emoji Clock) -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⏰</text></svg>">
 
     <style>
         :root {
             --primary-color: #FF4D4D;
             /* 더 진하고 선명한 빨간색 */
             --primary-hover: #E63946;
-            --bg-color: #F0F2F5;
-            /* 부드러운 그레이 */
+            --bg-color: #FFFFFF;
+            /* 깨끗한 화이트 배경 */
             --container-bg: #FFFFFF;
             --text-main: #2C3E50;
             --text-sub: #95A5A6;
@@ -353,27 +365,106 @@
             color: #2C3E50;
         }
 
-        /* 수익화 영역 */
-        .monetization-area {
+        /* 통계 영역 */
+        .stats-area {
             margin-top: 40px;
             width: 100%;
             max-width: 460px;
-            display: flex;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
 
-        .ad-slot {
-            width: 100%;
-            height: 90px;
-            background-color: #FAFAFA;
-            border: 1px dashed #E0E0E0;
-            border-radius: 16px;
+        .stats-card {
+            background-color: #F8F9FA;
+            padding: 20px;
+            border-radius: 24px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: #BDC3C7;
+            border: 1px solid #F1F3F5;
+            transition: transform 0.2s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-3px);
+            background-color: #FFFFFF;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .stats-label {
             font-size: 0.8rem;
-            font-weight: 500;
+            color: var(--text-sub);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stats-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .stats-value.success {
+            color: var(--primary-color);
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .success-list-container {
+            background-color: #F8F9FA;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #F1F3F5;
+            text-align: left;
+            width: 100%;
+        }
+
+        .success-list-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .success-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .success-item {
+            font-size: 0.85rem;
+            color: var(--text-main);
+            background: #FFFFFF;
+            padding: 10px 15px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+            font-weight: 600;
+        }
+
+        /* 스크롤바 커스텀 */
+        .success-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .success-list::-webkit-scrollbar-thumb {
+            background: #DDE2E5;
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -417,14 +508,14 @@
 
             <!-- 4. 중앙 텍스트 -->
             <div class="center-content">
-                <div class="time-text" id="display-time">60:00</div>
+                <div class="time-text" id="display-time">00:00</div>
                 <div class="phrase-text">I CAN DO IT.</div>
             </div>
         </div>
 
         <div class="control-panel">
             <div class="slider-wrapper">
-                <input type="range" id="time-input" min="0" max="60" value="60" step="1">
+                <input type="range" id="time-input" min="0" max="60" value="0" step="1">
                 <div class="slider-labels">
                     <span class="slider-label" style="left: 0%">0</span>
                     <span class="slider-label" style="left: 16.66%">10</span>
@@ -443,13 +534,31 @@
         </div>
     </div>
 
-    <div class="monetization-area">
-        <div class="ad-slot">Ad Space (Google AdSense)</div>
+    <div class="stats-area">
+        <div class="stats-summary">
+            <div class="stats-card">
+                <span class="stats-label">오늘의 도전</span>
+                <span class="stats-value" id="stat-attempts">0</span>
+            </div>
+            <div class="stats-card">
+                <span class="stats-label">목표 달성</span>
+                <span class="stats-value success" id="stat-success">0</span>
+            </div>
+        </div>
+
+        <div class="success-list-container">
+            <div class="success-list-title">
+                <span>🏆 오늘 달성한 목표</span>
+            </div>
+            <ul class="success-list" id="success-list">
+                <!-- 성공한 목표들이 여기에 추가됩니다 -->
+            </ul>
+        </div>
     </div>
 
     <script>
         const maxMinutes = 60;
-        let remainingSeconds = maxMinutes * 60;
+        let remainingSeconds = 0;
         let timerId = null;
         let isRunning = false;
         // [추가] 무음 모드 상태 변수
@@ -466,6 +575,46 @@
         const btnSound = document.getElementById('btn-sound');
         const iconSoundOn = document.getElementById('icon-sound-on');
         const iconSoundOff = document.getElementById('icon-sound-off');
+
+        // [추가] 통계 관련 요소 및 상태
+        const statAttempts = document.getElementById('stat-attempts');
+        const statSuccess = document.getElementById('stat-success');
+        const successList = document.getElementById('success-list');
+        const goalInput = document.querySelector('.goal-input');
+
+        // 로컬 스토리지에서 오늘 날짜의 통계 가져오기
+        const today = new Date().toLocaleDateString();
+        let stats = JSON.parse(localStorage.getItem('focusStats')) || { date: today, attempts: 0, success: 0, goals: [] };
+
+        // 날짜가 다르면 초기화
+        if (stats.date !== today) {
+            stats = { date: today, attempts: 0, success: 0, goals: [] };
+        }
+
+        function updateStatsUI() {
+            statAttempts.textContent = stats.attempts;
+            statSuccess.textContent = stats.success;
+
+            // 리스트 렌더링
+            if (successList) {
+                successList.innerHTML = '';
+                if (stats.goals && stats.goals.length > 0) {
+                    stats.goals.forEach(goal => {
+                        const li = document.createElement('li');
+                        li.className = 'success-item';
+                        li.textContent = goal;
+                        successList.appendChild(li);
+                    });
+                    successList.scrollTop = successList.scrollHeight;
+                } else {
+                    successList.innerHTML = '<li style="font-size: 0.8rem; color: #BDC3C7; text-align: center; padding: 10px;">아직 달성한 목표가 없습니다.</li>';
+                }
+            }
+
+            localStorage.setItem('focusStats', JSON.stringify(stats));
+        }
+
+        updateStatsUI();
 
         // [추가] 알람 소리 재생 함수 (Web Audio API 사용 - 별도 파일 없이 작동)
         function playAlarm() {
@@ -590,6 +739,10 @@
             // [추가] 시작 시 문구 변경
             document.querySelector('.phrase-text').textContent = "FOCUSING";
 
+            // [추가] 시도 횟수 카운트
+            stats.attempts++;
+            updateStatsUI();
+
             timerId = setInterval(() => {
                 remainingSeconds--;
                 updateTextDisplay();
@@ -620,6 +773,13 @@
             const phrase = document.querySelector('.phrase-text');
             phrase.textContent = "DONE";
             phrase.classList.add('jingle');
+
+            // [추가] 성공 횟수 카운트 및 목표 추가
+            stats.success++;
+            const currentGoal = goalInput.value.trim() || "이름 없는 목표";
+            if (!stats.goals) stats.goals = [];
+            stats.goals.push(currentGoal);
+            updateStatsUI();
 
             // [추가] 알람 재생 (소리 원복 및 alert 지연)
             playAlarm();
@@ -659,7 +819,7 @@
         });
 
         drawClockFace();
-        updateTimerVisual(1);
+        updateTimerVisual(0);
         updateTextDisplay();
 
     </script>
